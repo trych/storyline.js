@@ -1,0 +1,399 @@
+/* CSS-Variablen */
+
+:root {
+
+  /* ---- Farben ---- */
+  --tl-dot-color: #2563eb;         /* Punkte */
+  --tl-active-color: #ef4444;      /* aktives Ereignis (Punkt + Beschriftung) */
+  --tl-indicator-color: #ef4444;   /* mitlaufender Indikator */
+  --tl-line-color: #d1d5db;        /* Linie */
+  --tl-date-color: #2563eb;        /* Datums-/Wert-Beschriftung an den Ereignissen */
+  --tl-progress-color: var(--tl-dot-color);   /* Fortschrittsbalken */
+  --tl-background: transparent;      /* Hintergrund hinter der Timeline */
+  /* --tl-counter-color: #2563eb; */ /* Wert-Zähler */
+
+  /* ---- Größen ---- */
+  --tl-dot-size: 12px;            /* Durchmesser der Punkte */
+  --tl-line-width: 2px;           /* Dicke der Linie */
+  --tl-width: 180px;              /* Breite der Timeline-Spalte */
+  --tl-image-width: 12rem;        /* max. Breite der Event-Bilder */
+
+  /* ---- Abstände ---- */
+  --tl-gap: 1rem;                 /* Abstand der Achse zum Rand */
+  --tl-label-gap: 0.25em;         /* Abstand Beschriftung ↔ Linie */
+  --tl-track-top: 1rem;           /* Abstand Linienanfang von oben */
+  --tl-track-bottom: 2rem;        /* Abstand Linienende von unten */
+
+  /* ---- Abgeleitet (passen sich automatisch an die Werte oben an) ---- */
+  --tl-indicator-size: calc(var(--tl-dot-size) * 1.25);   /* Größe des Indikators */
+  --tl-range-width: calc(var(--tl-dot-size) / 4);         /* Dicke der Zeitraum-Balken */
+  --tl-progress-width: calc(var(--tl-line-width) + (var(--tl-dot-size) - var(--tl-line-width)) / 4); /* Dicke des Fortschrittsbalkens */
+
+}
+
+.tl-event, .tl-line, .tl-indicator {
+  cursor: pointer;
+}
+
+.tl-event {
+  position: absolute;
+  left: 0;
+  padding-left: calc(var(--tl-dot-size) / 2 + var(--tl-label-gap));
+  width: max-content;
+}
+
+timeline-view {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  padding-right: var(--tl-gap, 1.5rem);
+  width: var(--tl-width, 180px);
+  box-sizing: content-box;
+  background: var(--tl-background);
+
+  &.tl-left {
+    right: auto;
+    left: 0;
+
+    .tl-image {
+      right: auto;
+      left: 100%;
+      margin-right: 0;
+      margin-left: var(--tl-gap);
+    }
+  }
+}
+
+.tl-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  width: max-content;
+}
+
+.tl-track {
+  position: absolute;
+  top: var(--tl-track-top);
+  bottom: var(--tl-track-bottom);
+  left: calc(var(--tl-gap, 1.5rem) + var(--tl-dot-size) / 2);
+  right: 0;
+}
+
+.tl-line {
+  position: absolute;
+  left: calc(var(--tl-line-width) / -2);   /* Mittelachse der Linie = x:0 */
+  top: 0;
+  bottom: 0;
+  width: var(--tl-line-width);
+  background: var(--tl-line-color);
+}
+
+.tl-indicator {
+  position: absolute;
+  left: 0;
+  width: var(--tl-indicator-size);
+  height: var(--tl-indicator-size);
+  border-radius: 50%;
+  background: var(--tl-indicator-color, #ef4444);
+  z-index: 2;
+  /* transition: top 0.1s linear; */
+  transform: translate(-50%, -50%);   /* zentriert sich auf seinen Koordinatenpunkt */
+}
+
+/* Wert-Zähler am Indikator (Linien-Modus, opt-in über counter-Attribut).
+   Sitzt auf der den Labels gegenüberliegenden Seite der Linie, damit sich
+   Live-Wert und Ereignis-Daten nicht überlagern. */
+.tl-indicator .tl-counter {
+  position: absolute;
+  right: calc(100% + 0.4em);
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  text-align: right;
+  color: var(--tl-counter-color, var(--tl-date-color, #2563eb));
+}
+
+.tl-dot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -50%);   /* zentriert sich auf seinen Koordinatenpunkt */
+  width: var(--tl-dot-size);
+  height: var(--tl-dot-size);
+  border-radius: 50%;
+  background: var(--tl-dot-color);
+  transition: transform 0.15s, background 0.15s;
+}
+
+.tl-label-box {
+  transform: translateY(calc(var(--tl-dot-size) / -2));
+}
+
+.tl-date {
+  margin: 0;
+  line-height: var(--tl-dot-size);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--tl-date-color, #2563eb);
+}
+
+.tl-label {
+  margin: 0.1rem 0 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+
+  &:first-child {
+    margin-top: 0;
+    line-height: var(--tl-dot-size);
+  }
+}
+
+.tl-image {
+  position: absolute;
+  right: 100%;                       /* links neben das Event = links der Linie */
+  top: 0;
+  transform: translateY(-50%);       /* vertikal auf den Punkt zentriert */
+  margin-right: var(--tl-gap);
+  max-width: var(--tl-image-width, 12rem);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+
+.tl-active {
+
+  .tl-dot {
+    transform: translate(-50%, -50%) scale(1.25);
+    background: var(--tl-active-color, #ef4444);
+    z-index: 1;
+  }
+
+  .tl-label {
+    color: var(--tl-active-color, #ef4444);
+  }
+
+  .tl-image {
+    opacity: 1;
+  }
+
+  .tl-range {
+    background: var(--tl-active-color, #ef4444);
+    z-index: 1;
+  }
+
+}
+
+.tl-preview {
+  position: absolute;
+  width: var(--tl-dot-size);
+  height: var(--tl-dot-size);
+  border-radius: 50%;
+  background: var(--tl-indicator-color, #ef4444);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+
+.tl-preview-active {
+  opacity: 1;
+}
+
+.tl-preview-date {
+  position: absolute;
+  left: calc(100% + 0.4em);
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.tl-progress {
+  position: absolute;
+  height: var(--tl-progress-width);
+  border-radius: calc(var(--tl-progress-width) / 4);
+  transform-origin: 0 50%;
+  background: var(--tl-progress-color);
+  pointer-events: none;
+  /* left/top/width/Rotation setzt das JS */
+}
+
+.tl-range {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translateY(-50%);
+  transform-origin: 0 50%;
+  height: var(--tl-range-width);
+  border-radius: calc(var(--tl-range-width) / 2);
+  background: var(--tl-dot-color);
+  /* width und Rotation setzt das JS */
+}
+
+timeline-view.tl-horizontal {
+  top: auto;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: auto;
+  height: var(--tl-height, 90px);     /* wird per JS überschrieben */
+  padding-right: 0;
+  padding-bottom: var(--tl-gap, 1.5rem);
+
+  &.tl-top {
+    bottom: auto;
+    top: 0;
+  }
+
+  .tl-track {
+    top: calc(var(--tl-gap, 1.5rem) + var(--tl-dot-size) / 2);
+    bottom: 0;
+    left: var(--tl-track-left, 1rem);
+    right: var(--tl-track-right, 1rem);
+  }
+
+  .tl-line {
+    top: calc(var(--tl-line-width) / -2);   /* Mittelachse = y:0 */
+    left: 0;
+    right: 0;
+    bottom: auto;
+    width: auto;
+    height: var(--tl-line-width);
+  }
+
+  .tl-event {
+    padding-left: 0;
+    padding-top: calc(var(--tl-dot-size) / 2 + var(--tl-label-gap));
+  }
+
+  .tl-label-box {
+    transform: none;   /* der Halbe-Punkt-Versatz gilt nur neben einer vertikalen Linie */
+  }
+
+  .tl-image {
+    right: auto;
+    top: auto;
+    bottom: calc(100% + var(--tl-gap));   /* über der Linie statt daneben */
+    margin-right: 0;
+    transform: translateX(-50%);
+  }
+}
+
+timeline-view.tl-free {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: auto;
+  padding-right: 0;
+  pointer-events: none;   /* Vollbild-Overlay darf die Seite nicht blockieren */
+
+  .tl-line {
+    right: auto;
+    bottom: auto;
+    height: var(--tl-line-width);
+    transform-origin: 0 50%;   /* Drehpunkt: linkes Ende, auf der Achse */
+
+    /* unsichtbarer Hover-Korridor für Preview und Click-to-Scroll */
+    &::after {
+      content: '';
+      position: absolute;
+      inset: -2rem 0;
+    }
+  }
+
+  .tl-track {
+    top: var(--tl-track-top);
+    bottom: var(--tl-track-bottom);
+    left: var(--tl-track-left, 1rem);
+    right: var(--tl-track-right, 1rem);
+  }
+
+  .tl-event, .tl-line, .tl-indicator {
+    pointer-events: auto;
+  }
+}
+
+timeline-view.tl-depth {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: auto;
+  padding-right: 0;
+  pointer-events: none;
+  overflow: hidden;   /* aus- und einfliegende Objekte sauber beschneiden */
+
+  .tl-event {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    width: max-content;
+    max-width: 80vw;
+    pointer-events: auto;
+  }
+
+  .tl-event.tl-has-image {
+
+    .tl-label {
+      font-size: 1.25rem;
+      line-height: 1.3;
+    }
+
+    .tl-date {
+      font-size: 0.85rem;
+    }
+  }
+
+  .tl-date {
+    font-size: clamp(1rem, 2vw, 1.5rem);
+  }
+
+  .tl-label {
+    font-size: clamp(3rem, 9vw, 7rem);
+    line-height: 1.1;
+    margin: 0;
+  }
+
+  .tl-image {
+    position: static;
+    display: block;
+    margin: 0 auto 0.75rem;     /* Bild steht jetzt oben, Luft nach unten zur Caption */
+    width: min(55vw, 55vh);     /* width statt max-width: skaliert auch hoch */
+    max-width: none;            /* sonst deckelt --tl-image-width aus dem Linien-Modus */
+    height: auto;
+    transform: none;            /* die Punkt-Zentrierung aus dem Linien-Modus aufheben */
+    opacity: 1;
+  }
+
+  .tl-line {
+    position: absolute;
+    left: 50%;
+    top: 10%;
+    bottom: 0;
+    width: 7vw;                /* deutlich schlanker */
+    transform: translateX(-50%);
+    background: linear-gradient(to bottom, transparent, var(--tl-line-color));
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  }
+
+  .tl-counter {
+    position: absolute;
+    right: 4vw;
+    top: 4vh;
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 700;
+    color: var(--tl-counter-color, color-mix(in srgb, var(--tl-line-color) 80%, transparent));
+    pointer-events: none;
+    user-select: none;
+  }
+}
